@@ -74,9 +74,9 @@ const tokenize = (input) => {
     return [];
   }
 
-  for (let i in splited_array) {
-
-    if (Number.isNaN(i)) {
+  for (let i of splited_array) {
+    console.log(i);
+    if (isNaN(i)) {
       tokens.push(atom(i));
     } 
 
