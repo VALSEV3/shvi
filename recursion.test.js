@@ -41,23 +41,23 @@ Deno.test("Recursion", async (t) => {
       const reverseCapitalize = (str) => {
         const loop = (str, acc = []) => {
           if (str.length === 0) {
-            return acc.join(""); 
+            return acc.join("");
           }
 
           const first = str[0];
-          let changeCase;
+          let changedCase;
 
           if (first === first.toLowerCase()) {
-            changeCase = first.toUpperCase();
+            changedCase = first.toUpperCase();
           } else {
-            changeCase = first.toLowerCase();
+            changedCase = first.toLowerCase();
           }
 
-          acc.push(changeCase);
+          acc.push(changedCase);
           return loop(str.slice(1), acc);
         };
 
-        return loop(str); 
+        return loop(str);
       };
 
       const generalResult = reverseCapitalize("BetTeR SafE ThaN SoRry");
@@ -77,25 +77,23 @@ Deno.test("Recursion", async (t) => {
       // When all the elements are checked, return the maximum value
 
       const max = (numbers) => {
-        if(numbers.length === 0){
-          return -Infinity
+        if (numbers.length === 0) {
+          return -Infinity;
         }
-        if(numbers.length === 1){
+        if (numbers.length === 1) {
           return numbers[0];
         }
-        const maxElement = numbers[0]
-        const nextElement = numbers[1]
-        const result = numbers
+        const maxElement = numbers[0];
+        const nextElement = numbers[1];
+        const result = numbers;
 
-        if(maxElement > nextElement){
-          result.splice(1,1)
+        if (maxElement > nextElement) {
+          result.splice(1, 1);
+        } else {
+          result.splice(0, 1);
         }
-        else{
-          result.splice(0,1)
-        }
 
-        return max(result)
-
+        return max(result);
       };
 
       const maxOfEmptyList = max([]);
@@ -120,23 +118,27 @@ Deno.test("Recursion", async (t) => {
       //  If it is, skip both characters
       //  If it is not, add the first character to the result and move to the next character of the string
 
-      const strip = (str, substr,result=str) => {
-        if(str==="" || substr === ""){
-          return result
+      const strip = (str, substr, result = "") => {
+        if (str === "") {
+          return result;
         }
-        
-        if(str.startsWith(substr)){
-          result.slice(substr.length)
+        if (substr === "") {
+          return str;
         }
-        
-        return strip(str.slice(substr.length),substr,result)
+
+        if (str.startsWith(substr)) {
+          return strip(str.slice(substr.length), substr, result);
+        }
+
+        return strip(str.slice(1), substr, result + str[0]);
       };
 
       const generalResult = strip("Skies are grey in Greece", "re");
       const emptyStringResult = strip("", "re");
       const emptySubstringResult = strip("Skies are grey in Greece", "");
+
       assertEquals(generalResult, "Skies a gy in Gece");
-      assertEquals(emptySubstringResult, "Skies a gy in Gece");
+      assertEquals(emptySubstringResult, "Skies are grey in Greece");
       assertEquals(emptyStringResult, "");
     },
   });
@@ -148,9 +150,20 @@ Deno.test("Recursion", async (t) => {
       // If the first element is an array, flatten it and add it to the result
       // If the first element is not an array, add it to the result
       // Move to the next element and repeat the process
+      const flatten = (arr, acc = []) => {
+        if (arr.length === 0) {
+          return acc;
+        }
 
-      const flatten = (arr) => {
-        throw new Error("Not implemented");
+        const current = arr.shift();
+
+        if (Array.isArray(current)) {
+          flatten(current, acc);
+        } else {
+          acc.push(current);
+        }
+
+        return flatten(arr, acc);
       };
 
       const generalResult = flatten([1, [2, 3], [4, [5]]]);
