@@ -39,22 +39,25 @@ Deno.test("Recursion", async (t) => {
       // When all the characters are checked, return the result
 
       const reverseCapitalize = (str) => {
-        const loop = (str, acc ) => {
+        const loop = (str, acc = []) => {
           if (str.length === 0) {
-            return acc;
-          }
-          const [first, ...rest] = str;
-
-          if(first == first.toUpperCase()){
-            first.toLowerCase();
-          }
-          else{
-            first.toUpperCase();
+            return acc.join(""); 
           }
 
+          const first = str[0];
+          let changeCase;
+
+          if (first === first.toLowerCase()) {
+            changeCase = first.toUpperCase();
+          } else {
+            changeCase = first.toLowerCase();
+          }
+
+          acc.push(changeCase);
+          return loop(str.slice(1), acc);
         };
 
-        return loop(str, "");
+        return loop(str); 
       };
 
       const generalResult = reverseCapitalize("BetTeR SafE ThaN SoRry");
@@ -74,7 +77,25 @@ Deno.test("Recursion", async (t) => {
       // When all the elements are checked, return the maximum value
 
       const max = (numbers) => {
-        throw new Error("Not implemented");
+        if(numbers.length === 0){
+          return -Infinity
+        }
+        if(numbers.length === 1){
+          return numbers[0];
+        }
+        const maxElement = numbers[0]
+        const nextElement = numbers[1]
+        const result = numbers
+
+        if(maxElement > nextElement){
+          result.splice(1,1)
+        }
+        else{
+          result.splice(0,1)
+        }
+
+        return max(result)
+
       };
 
       const maxOfEmptyList = max([]);
@@ -99,8 +120,16 @@ Deno.test("Recursion", async (t) => {
       //  If it is, skip both characters
       //  If it is not, add the first character to the result and move to the next character of the string
 
-      const strip = (str, substr) => {
-        throw new Error("Not implemented");
+      const strip = (str, substr,result=str) => {
+        if(str==="" || substr === ""){
+          return result
+        }
+        
+        if(str.startsWith(substr)){
+          result.slice(substr.length)
+        }
+        
+        return strip(str.slice(substr.length),substr,result)
       };
 
       const generalResult = strip("Skies are grey in Greece", "re");

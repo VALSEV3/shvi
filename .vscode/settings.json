@@ -9,5 +9,8 @@
   ],
   "files.associations": {
     "*.shvi": "lisp"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
