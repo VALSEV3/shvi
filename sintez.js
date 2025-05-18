@@ -67,26 +67,43 @@ async function encodeWAV(
 const atom = (name) => Symbol.for(name);
 
 const typeify = (token) => {
-  throw new Error("Not implemented");
+  if (isNaN(Number(token))) {
+    return atom(token);
+  } else {
+    return Number(token);
+  }
 };
 
 const tokenize = (input) => {
-  const splited_array = input.split(" ");
-  const tokens = [];
-
-  if (input === "") {
-    return [];
-  }
-
   const loop = (
     progressiveScope,
-    [graphemeAtHand, ...restOfGraphemes],
+    graphemes,
     tokenSoFar = "",
   ) => {
-    throw new Error("Not implemented");
+    if (graphemes.length === 0) {
+      if (tokenSoFar.length === 0) {
+        return progressiveScope;
+      } else {
+        return [...progressiveScope, typeify(tokenSoFar)];
+      }
+    }
+    // ---------
+    const [graphemeAtHand, ...restOfGraphemes] = graphemes;
+
+    switch (graphemeAtHand) {
+      case " ":
+        progressiveScope.push(typeify(tokenSoFar));
+        return loop(progressiveScope, restOfGraphemes, "");
+      default:
+        return loop(
+          progressiveScope,
+          restOfGraphemes,
+          tokenSoFar + graphemeAtHand,
+        );
+    }
   };
 
-  return loop([[]], graphemes);
+  return loop([], Array.from(input));
 };
 
 const evaluate = (expression) => {
