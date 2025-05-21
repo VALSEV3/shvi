@@ -24,11 +24,7 @@ function generatePCM(frequency, duration) {
   return samples;
 }
 
-async function encodeWAV(
-  samples,
-  output = "output.wav",
-  sampleRate = 44100,
-) {
+async function encodeWAV(samples, output = "output.wav", sampleRate = 44100) {
   const headerSize = 44;
   const dataSize = samples.length * 2;
   const buffer = new ArrayBuffer(headerSize + dataSize);
@@ -58,14 +54,12 @@ async function encodeWAV(
     view.setInt16(headerSize + i * 2, samples[i], true);
   }
 
-  await Deno.writeFile(
-    output,
-    new Uint8Array(buffer),
-  );
+  await Deno.writeFile(output, new Uint8Array(buffer));
 }
 
 const atom = (name) => Symbol.for(name);
 
+//typeify token : atom or number
 const typeify = (token) => {
   if (isNaN(Number(token))) {
     return atom(token);
@@ -74,12 +68,28 @@ const typeify = (token) => {
   }
 };
 
+const handleTokens = (scope,grapheme,tokenSoFar) =>{
+  switch (grapheme) {
+      case " ":
+        //if we see space we pushing typeified token to progressiveScope and continue with empty tokenSoFar
+        scope.push(typeify(tokenSoFar));
+        tokenSoFar = "";
+        
+      case "(":
+      
+
+      case ")":
+
+      default:
+        //in deafault case we add first grapheme to tokenSoFar
+
+        tokenSoFar += grapheme;
+    }
+  return [scope,tokenSoFar]
+}
+
 const tokenize = (input) => {
-  const loop = (
-    progressiveScope,
-    graphemes,
-    tokenSoFar = "",
-  ) => {
+  const loop = (progressiveScope, graphemes, tokenSoFar = "") => {
     if (graphemes.length === 0) {
       if (tokenSoFar.length === 0) {
         return progressiveScope;
@@ -87,20 +97,15 @@ const tokenize = (input) => {
         return [...progressiveScope, typeify(tokenSoFar)];
       }
     }
-    // ---------
-    const [graphemeAtHand, ...restOfGraphemes] = graphemes;
 
-    switch (graphemeAtHand) {
-      case " ":
-        progressiveScope.push(typeify(tokenSoFar));
-        return loop(progressiveScope, restOfGraphemes, "");
-      default:
-        return loop(
-          progressiveScope,
-          restOfGraphemes,
-          tokenSoFar + graphemeAtHand,
-        );
-    }
+    const [graphemeAtHand, ...restOfGraphemes] = graphemes;
+    const [updatedScope, updatedToken] = handleTokens(
+      progressiveScope,
+      graphemeAtHand,
+      tokenSoFar
+    );
+
+    return loop(updatedScope, restOfGraphemes, updatedToken);
   };
 
   return loop([], Array.from(input));
