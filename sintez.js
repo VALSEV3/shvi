@@ -68,25 +68,7 @@ const typeify = (token) => {
   }
 };
 
-const handleTokens = (scope,grapheme,tokenSoFar) =>{
-  switch (grapheme) {
-      case " ":
-        //if we see space we pushing typeified token to progressiveScope and continue with empty tokenSoFar
-        scope.push(typeify(tokenSoFar));
-        tokenSoFar = "";
-        
-      case "(":
-      
 
-      case ")":
-
-      default:
-        //in deafault case we add first grapheme to tokenSoFar
-
-        tokenSoFar += grapheme;
-    }
-  return [scope,tokenSoFar]
-}
 
 const tokenize = (input) => {
   const loop = (progressiveScope, graphemes, tokenSoFar = "") => {
@@ -98,14 +80,26 @@ const tokenize = (input) => {
       }
     }
 
-    const [graphemeAtHand, ...restOfGraphemes] = graphemes;
-    const [updatedScope, updatedToken] = handleTokens(
-      progressiveScope,
-      graphemeAtHand,
-      tokenSoFar
-    );
+    const [graphemeAtHand,...restOfGraphemes] = graphemes
 
-    return loop(updatedScope, restOfGraphemes, updatedToken);
+   switch (graphemeAtHand) {
+      case " ":
+        
+        progressiveScope.push(typeify(tokenSoFar));
+        tokenSoFar = "";
+        
+      case "(":
+  
+
+      case ")":
+
+      default:
+        
+
+        tokenSoFar += graphemeAtHand;
+    }
+
+    return loop(progressiveScope, restOfGraphemes, tokenSoFar);
   };
 
   return loop([], Array.from(input));
