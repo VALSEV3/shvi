@@ -60,9 +60,8 @@ Deno.test("Tokenizer", async (t) => {
   await t.step({
     name: "tokenize a nested list",
     fn: () => {
-      fail(
-        "This test is not implemented yet. Please implement it.",
-      );
+      const result = tokenize("sequence(tone C4 80)")
+      assertEquals(result, [[atom("sequence"),atom("tone"),atom("C4"),80]]);
     },
   });
 });

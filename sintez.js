@@ -68,41 +68,50 @@ const typeify = (token) => {
   }
 };
 
-
-
 const tokenize = (input) => {
   const loop = (progressiveScope, graphemes, tokenSoFar = "") => {
+
+    const [graphemeAtHand, ...restOfGraphemes] = graphemes;
+    const [currentScope, ...prevScopes] = progressiveScope;
+
     if (graphemes.length === 0) {
       if (tokenSoFar.length === 0) {
-        return progressiveScope;
+        return currentScope;
       } else {
-        return [...progressiveScope, typeify(tokenSoFar)];
+        return [...currentScope, typeify(tokenSoFar)];
       }
     }
 
-    const [graphemeAtHand,...restOfGraphemes] = graphemes
 
-   switch (graphemeAtHand) {
+
+    switch (graphemeAtHand) {
       case " ":
-        
-        progressiveScope.push(typeify(tokenSoFar));
+        currentScope.push(typeify(tokenSoFar));
         tokenSoFar = "";
-        
+        break;
+
       case "(":
-  
+        // check if we have a dangling token, if so - push it to the current scope
+        if(tokenSoFar.length>0){
+          currentScope.push(typeify(tokenSoFar))
+          tokenSoFar = ""
+        }
+        progressiveScope = [[], ...progressiveScope];
+        break;
 
       case ")":
+        const [prevScope, ...otherScopes] = prevScopes;
+        progressiveScope = [[...prevScope, currentScope], otherScopes];
+        break;
 
       default:
-        
-
         tokenSoFar += graphemeAtHand;
     }
 
     return loop(progressiveScope, restOfGraphemes, tokenSoFar);
   };
 
-  return loop([], Array.from(input));
+  return loop([[]], Array.from(input));
 };
 
 const evaluate = (expression) => {
