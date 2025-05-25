@@ -70,7 +70,6 @@ const typeify = (token) => {
 
 const tokenize = (input) => {
   const loop = (progressiveScope, graphemes, tokenSoFar = "") => {
-
     const [graphemeAtHand, ...restOfGraphemes] = graphemes;
     const [currentScope, ...prevScopes] = progressiveScope;
 
@@ -78,36 +77,39 @@ const tokenize = (input) => {
       if (tokenSoFar.length === 0) {
         return currentScope;
       } else {
+        // console.log(...progressiveScope, typeify(tokenSoFar))
         return [...currentScope, typeify(tokenSoFar)];
       }
     }
 
-
+    const pushToken = () => {
+      if (tokenSoFar.length > 0) {
+        currentScope.push(typeify(tokenSoFar));
+        tokenSoFar = "";
+      }
+    };
 
     switch (graphemeAtHand) {
       case " ":
-        currentScope.push(typeify(tokenSoFar));
-        tokenSoFar = "";
+        pushToken();
         break;
 
       case "(":
         // check if we have a dangling token, if so - push it to the current scope
-        if(tokenSoFar.length>0){
-          currentScope.push(typeify(tokenSoFar))
-          tokenSoFar = ""
-        }
+        pushToken();
         progressiveScope = [[], ...progressiveScope];
         break;
 
       case ")":
+        pushToken();
         const [prevScope, ...otherScopes] = prevScopes;
-        progressiveScope = [[...prevScope, currentScope], otherScopes];
+        console.log([...prevScope, currentScope]);
+        progressiveScope = [[...prevScope, currentScope], ...otherScopes];
         break;
 
       default:
         tokenSoFar += graphemeAtHand;
     }
-
     return loop(progressiveScope, restOfGraphemes, tokenSoFar);
   };
 
@@ -115,5 +117,5 @@ const tokenize = (input) => {
 };
 
 const evaluate = (expression) => {
-  throw new Error("Not implemented");
+
 };
