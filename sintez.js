@@ -77,7 +77,6 @@ const tokenize = (input) => {
       if (tokenSoFar.length === 0) {
         return currentScope;
       } else {
-        // console.log(...progressiveScope, typeify(tokenSoFar))
         return [...currentScope, typeify(tokenSoFar)];
       }
     }
@@ -103,7 +102,6 @@ const tokenize = (input) => {
       case ")":
         pushToken();
         const [prevScope, ...otherScopes] = prevScopes;
-        console.log([...prevScope, currentScope]);
         progressiveScope = [[...prevScope, currentScope], ...otherScopes];
         break;
 
@@ -116,6 +114,23 @@ const tokenize = (input) => {
   return loop([[]], Array.from(input));
 };
 
-const evaluate = (expression) => {
+const evaluate = (expression,acc=0) => {
+  if (!Array.isArray(expression)) {
+    return new Error("expression must be an array");
+  }
 
+
+  const [first, ...rest] = expression;
+
+  switch (first) {
+    case atom("tone"):
+      try {
+        return generatePCM(rest[0], rest[1]);
+      } catch (e) {
+        return new Error(e);
+      }
+    default:
+      return new Error("Unknown operator")
+    
+  }
 };
