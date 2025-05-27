@@ -24,6 +24,7 @@ function generatePCM(frequency, duration) {
   return samples;
 }
 
+
 function sequence(...PCMs) {
   throw new Error(
     "🪈 The `sequence` function is not implemented yet.",
@@ -70,105 +71,80 @@ async function encodeWAV(
   );
 }
 
-const typeify = (token) => {
-  const parsedNumber = Number.parseFloat(token, 10);
-  return Number.isNaN(parsedNumber) ? Symbol.for(token) : parsedNumber;
-};
-
 const atom = (name) => Symbol.for(name);
 
-const tokenize = (input) => {
-  const graphemes = Array.from(input.trim());
-
-  const loop = (
-    progressiveScope,
-    [graphemeAtHand, ...restOfGraphemes],
-    tokenSoFar = "",
-  ) => {
-    const [currentScope, parentScope, ...outerScopes] = progressiveScope;
-
-    if (!graphemeAtHand) {
-      return tokenSoFar.length > 0
-        ? [...currentScope, typeify(tokenSoFar)]
-        : currentScope;
-    }
-
-    switch (graphemeAtHand) {
-      case "(": {
-        const updatedCurrentScope = tokenSoFar.length > 0
-          ? [...currentScope, typeify(tokenSoFar)]
-          : currentScope;
-
-        const newProgressiveScope = parentScope
-          ? [[], updatedCurrentScope, parentScope, ...outerScopes]
-          : [[], updatedCurrentScope, ...outerScopes];
-
-        return loop(
-          newProgressiveScope,
-          restOfGraphemes,
-        );
-      }
-      case ")": {
-        const updatedCurrentScope = tokenSoFar.length > 0
-          ? [...currentScope, typeify(tokenSoFar)]
-          : currentScope;
-
-        const innerHead = parentScope
-          ? [...parentScope, updatedCurrentScope]
-          : updatedCurrentScope;
-
-        const newProgressiveScope = [
-          innerHead,
-          ...outerScopes,
-        ];
-
-        return loop(newProgressiveScope, restOfGraphemes, "");
-      }
-      case " ": {
-        const updatedCurrentScope = tokenSoFar.length > 0
-          ? [...currentScope, typeify(tokenSoFar)]
-          : currentScope;
-
-        const newProgressiveScope = [
-          updatedCurrentScope,
-          parentScope,
-          ...outerScopes,
-        ];
-
-        return loop(
-          newProgressiveScope,
-          restOfGraphemes,
-        );
-      }
-      default:
-        return loop(
-          progressiveScope,
-          restOfGraphemes,
-          tokenSoFar + graphemeAtHand,
-        );
-    }
-  };
-
-  return loop([[]], graphemes);
+//typeify token : atom or number
+const typeify = (token) => {
+  if (isNaN(Number(token))) {
+    return atom(token);
+  } else {
+    return Number(token);
+  }
 };
 
-const evaluate = (expression) => {
-  if (typeof expression === "number") {
-    return expression;
+const tokenize = (input) => {
+  const loop = (progressiveScope, graphemes, tokenSoFar = "") => {
+    const [graphemeAtHand, ...restOfGraphemes] = graphemes;
+    const [currentScope, ...prevScopes] = progressiveScope;
+
+    if (graphemes.length === 0) {
+      if (tokenSoFar.length === 0) {
+        return currentScope;
+      } else {
+        return [...currentScope, typeify(tokenSoFar)];
+      }
+    }
+
+    const pushToken = () => {
+      if (tokenSoFar.length > 0) {
+        currentScope.push(typeify(tokenSoFar));
+        tokenSoFar = "";
+      }
+    };
+
+    switch (graphemeAtHand) {
+      case " ":
+        pushToken();
+        break;
+
+      case "(":
+        // check if we have a dangling token, if so - push it to the current scope
+        pushToken();
+        progressiveScope = [[], ...progressiveScope];
+        break;
+
+      case ")":
+        pushToken();
+        const [prevScope, ...otherScopes] = prevScopes;
+        progressiveScope = [[...prevScope, currentScope], ...otherScopes];
+        break;
+
+      default:
+        tokenSoFar += graphemeAtHand;
+    }
+    return loop(progressiveScope, restOfGraphemes, tokenSoFar);
+  };
+
+  return loop([[]], Array.from(input));
+};
+
+const evaluate = (expression,acc=0) => {
+  if (!Array.isArray(expression)) {
+    return new Error("expression must be an array");
   }
 
-  if (Array.isArray(expression)) {
-    const [operator, ...operands] = expression;
 
-    switch (operator) {
-      case atom("tone"):
-        return generatePCM(...operands);
-      case atom("sequence"):
-        return sequence(...operands);
-      default:
-        throw new Error(
-          `🪈 Error: Unknown operator ....... \`${Symbol.keyFor(operator)}\``,
-        );
-    }
+  const [first, ...rest] = expression;
+
+  switch (first) {
+    case atom("tone"):
+      try {
+        return generatePCM(rest[0], rest[1]);
+      } catch (e) {
+        return new Error(e);
+      }
+    default:
+      return new Error("Unknown operator")
+    
   }
 };
