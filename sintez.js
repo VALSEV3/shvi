@@ -25,10 +25,14 @@ function generatePCM(frequency, duration) {
 }
 
 
-function sequence(...PCMs) {
-  throw new Error(
-    "🪈 The `sequence` function is not implemented yet.",
-  );
+function sequence(acc=[],...PCMs) {
+  if(PCMs.length === 0){
+    return acc;
+  }
+  const [firstPCM,restPCM] = PCMs
+  const samples = generatePCM(firstPCM[1],firstPCM[2])
+  acc.push(samples)
+  sequence(acc,restPCM)
 }
 
 async function encodeWAV(
@@ -128,7 +132,10 @@ const tokenize = (input) => {
   return loop([[]], Array.from(input));
 };
 
-const evaluate = (expression,acc=0) => {
+const evaluate = (expression) => {
+  if(typeof expression === "number"){
+    return expression;
+  }
   if (!Array.isArray(expression)) {
     return new Error("expression must be an array");
   }
@@ -138,11 +145,12 @@ const evaluate = (expression,acc=0) => {
 
   switch (first) {
     case atom("tone"):
-      try {
-        return generatePCM(rest[0], rest[1]);
-      } catch (e) {
-        return new Error(e);
-      }
+     return generatePCM(rest[0], rest[1]);
+    
+    case atom("sequence"):
+      const samples = sequence(rest)
+      return samples;
+
     default:
       return new Error("Unknown operator")
     
