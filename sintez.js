@@ -114,7 +114,10 @@ const tokenize = (input) => {
   return loop([[]], Array.from(input));
 };
 
-const evaluate = (expression,acc=0) => {
+const evaluate = (expression) => {
+  if(typeof expression === "number"){
+    return expression;
+  }
   if (!Array.isArray(expression)) {
     return new Error("expression must be an array");
   }
