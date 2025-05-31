@@ -43,9 +43,7 @@ Deno.test("Playing things", async (t) => {
   await t.step({
     name: "playing a D4 for two seconds",
     fn: async () => {
-      const music = "(tone 293.66 200)"
-            
-
+      const music = "(tone 293.66 2000)";
 
       const tokens = tokenize(music);
       const samples = evaluate(tokens[0]);
@@ -62,7 +60,8 @@ Deno.test("Playing things", async (t) => {
     name:
       "playing an F4 for one second, a C4 for two seconds, and a G4 for one second",
     fn: async () => {
-      const music = "(sequence (tone 349.23 100) (tone 261.63 200) (tone 392.00 100))"
+      const music =
+        "(sequence (tone 349.23 1000) (tone 261.63 2000) (tone 392.00 1000))";
 
       const tokens = tokenize(music);
       const samples = evaluate(tokens[0]);

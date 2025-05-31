@@ -16,8 +16,23 @@ function generatePCM(frequency, duration) {
 
   const samples = [];
   for (let i = 0; i < numSamples; i++) {
+  
     const t = i / sampleRate;
-    const sample = amplitude * Math.sin(2 * Math.PI * frequency * t);
+    let sample;
+    
+    if (i < numSamples * 0.05) {
+   
+      sample = amplitude * (i / (numSamples * 0.05)) * Math.sin(2 * Math.PI * frequency * t);
+  } else if (i > numSamples * 0.95) {
+   
+      sample = amplitude * ((numSamples - i) / (numSamples * 0.05)) * Math.sin(2 * Math.PI * frequency * t);
+  } else {
+   
+      sample = amplitude * Math.sin(2 * Math.PI * frequency * t);
+  }
+  
+     
+    
     samples.push(sample);
   }
 
@@ -25,14 +40,15 @@ function generatePCM(frequency, duration) {
 }
 
 
-function sequence(acc=[],...PCMs) {
+function sequence(PCMs,acc=[]) {
   if(PCMs.length === 0){
     return acc;
   }
-  const [firstPCM,restPCM] = PCMs
+
+  const [firstPCM,...restPCMs] = PCMs
   const samples = generatePCM(firstPCM[1],firstPCM[2])
-  acc.push(samples)
-  sequence(acc,restPCM)
+  acc.push(...samples)
+  return sequence(restPCMs,acc)   
 }
 
 async function encodeWAV(
@@ -131,6 +147,8 @@ const tokenize = (input) => {
 
   return loop([[]], Array.from(input));
 };
+
+
 
 const evaluate = (expression) => {
   if(typeof expression === "number"){
